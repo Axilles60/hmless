@@ -159,9 +159,25 @@ class Target:
         self.color = choice(GAME_COLORS)
         self.x = random.randint(self.r, WIDTH - self.r)
         self.y = random.randint(self.r, HEIGHT - self.r)
+        self.vx=random.randint(0,20)
+        self.vy=random.randint(0,20)
         self.points = 0
         self.live = 1
         self.new_target()
+
+    def move(self):
+        """Переместить мяч по прошествии единицы времени.
+
+        Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
+        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
+        и стен по краям окна (размер окна 800х600).
+        """
+        if(self.x-self.r<0 or self.x+self.r>WIDTH):
+            self.vx=-self.vx
+        if(self.y-self.r<0 or self.y+self.r>HEIGHT):
+            self.vy=-self.vy
+        self.x += self.vx
+        self.y -= self.vy
 
     def new_target(self):
         """ Инициализация новой цели. """
@@ -171,10 +187,6 @@ class Target:
         self.color = choice(GAME_COLORS)
         self.points = 0
         self.live = 1
-
-    def hit(self, points=1):
-        """Попадание шарика в цель."""
-        self.points += points
 
     def draw(self):
         circle(self.screen, self.color, (self.x, self.y), self.r)
@@ -203,13 +215,13 @@ while not finished:
             gun.fire2_end(event)
         elif event.type == pygame.MOUSEMOTION:
             gun.targetting(event)
-
+    for i in target:
+        i.move()
     for b in balls:
         b.move()
         for i in target:
             if b.hittest(i) and i.live:
                 i.live = 0
-                i.hit()
                 i.new_target()
     gun.power_up()
 
@@ -219,7 +231,7 @@ while not finished:
         i.draw()
     for b in balls:
         b.draw()
-    draw_text(screen, str(score), 40, 20, 10)
+    draw_text(screen, str(score), 40, 40, 10)
     pygame.display.update()
 
 pygame.quit()
