@@ -20,8 +20,10 @@ GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 font_name = pygame.font.match_font('arial')
 WIDTH = 800
 HEIGHT = 600
-gravity=2
-score=0
+gravity = 2
+score = 0
+
+
 def draw_text(surf, text, size, x, y):
     '''
     Рисует текст
@@ -37,6 +39,8 @@ def draw_text(surf, text, size, x, y):
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
+
+
 class Ball:
     def __init__(self, screen: pygame.Surface, x=40, y=450):
         """ Конструктор класса ball
@@ -49,27 +53,26 @@ class Ball:
         self.screen = screen
         self.x = x
         self.y = y
-        self.r = 10
+        self.r = random.randint(10, 20)
         self.vx = 0
         self.vy = 0
         self.color = choice(GAME_COLORS)
         self.live = 30
 
-    def move(self):
+    def move(self, grav):
         """Переместить мяч по прошествии единицы времени.
 
         Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
         self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
         и стен по краям окна (размер окна 800х600).
         """
-        if(self.x-self.r<0 or self.x+self.r>WIDTH):
-            self.vx=-self.vx
-        if(self.y-self.r<0 or self.y+self.r>HEIGHT):
-            self.vy=-self.vy
+        if self.x - self.r < 0 or self.x + self.r > WIDTH:
+            self.vx = -self.vx
+        if self.y - self.r < 0 or self.y + self.r > HEIGHT:
+            self.vy = -self.vy
         self.x += self.vx
         self.y -= self.vy
-        self.vy-=gravity
-
+        self.vy -= grav
 
     def draw(self):
         pygame.draw.circle(
@@ -80,7 +83,7 @@ class Ball:
         )
 
     def hittest(self, obj):
-        """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
+        """Функция проверяет сталкивается ли данный обьект с целью, описываемой в обьекте obj.
 
         Args:
             obj: Обьект, с которым проверяется столкновение.
@@ -88,8 +91,8 @@ class Ball:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
         global score
-        if((self.x-obj.x)**2+(self.y-obj.y)**2)<=(self.r+obj.r)**2:
-            score+=1
+        if ((self.x - obj.x) ** 2 + (self.y - obj.y) ** 2) <= (self.r + obj.r) ** 2:
+            score += 1
             return True
 
         return False
@@ -102,8 +105,8 @@ class Gun:
         self.f2_on = 0
         self.an = 1
         self.color = GREY
-        self.x=20
-        self.y=450
+        self.x = 20
+        self.y = 450
 
     def fire2_start(self, event):
         self.f2_on = 1
@@ -117,8 +120,7 @@ class Gun:
         global bullet
         bullet += 1
         new_ball = Ball(self.screen)
-        new_ball.r += 5
-        self.an = math.atan2((event.pos[1]-new_ball.y), (event.pos[0]-new_ball.x))
+        self.an = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
         new_ball.vx = self.f2_power * math.cos(self.an)
         new_ball.vy = - self.f2_power * math.sin(self.an)
         balls.append(new_ball)
@@ -128,7 +130,7 @@ class Gun:
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
         if event:
-            self.an = math.atan((event.pos[1]-450) / (event.pos[0]-20))
+            self.an = math.atan((event.pos[1] - 450) / (event.pos[0] - 20))
         if self.f2_on:
             self.color = RED
         else:
@@ -138,30 +140,29 @@ class Gun:
         '''
         рисует ствол пушки
         '''
-        stvol=10+self.f2_power*1.2
-        sinan=math.sin(self.an)
-        cosan=math.cos(self.an)
+        stvol = 10 + self.f2_power * 1.2
+        sinan = math.sin(self.an)
+        cosan = math.cos(self.an)
         line(screen, self.color, (self.x, self.y), (self.x + stvol * cosan, self.y + stvol * sinan), 7)
 
     def power_up(self):
         if self.f2_on:
-            if self.f2_power < 100:
-                self.f2_power += 1
+            if self.f2_power < 60:
+                self.f2_power += 0.5
             self.color = RED
         else:
             self.color = GREY
 
 
 class Target:
-    def __init__(self,screen: pygame.Surface):
-        self.screen=screen
-        self.r = random.randint(10,50)
+    def __init__(self, screen: pygame.Surface):
+        self.screen = screen
+        self.r = random.randint(10, 50)
         self.color = choice(GAME_COLORS)
         self.x = random.randint(self.r, WIDTH - self.r)
         self.y = random.randint(self.r, HEIGHT - self.r)
-        self.vx=random.randint(0,20)
-        self.vy=random.randint(0,20)
-        self.points = 0
+        self.vx = random.randint(5, 30)
+        self.vy = random.randint(5, 30)
         self.live = 1
         self.new_target()
 
@@ -172,10 +173,10 @@ class Target:
         self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
         и стен по краям окна (размер окна 800х600).
         """
-        if(self.x-self.r<0 or self.x+self.r>WIDTH):
-            self.vx=-self.vx
-        if(self.y-self.r<0 or self.y+self.r>HEIGHT):
-            self.vy=-self.vy
+        if (self.x - self.r < 0 or self.x + self.r > WIDTH):
+            self.vx = -self.vx
+        if (self.y - self.r < 0 or self.y + self.r > HEIGHT):
+            self.vy = -self.vy
         self.x += self.vx
         self.y -= self.vy
 
@@ -185,7 +186,6 @@ class Target:
         x = self.x = random.randint(self.r, WIDTH - self.r)
         y = self.y = random.randint(self.r, HEIGHT - self.r)
         self.color = choice(GAME_COLORS)
-        self.points = 0
         self.live = 1
 
     def draw(self):
@@ -218,7 +218,18 @@ while not finished:
     for i in target:
         i.move()
     for b in balls:
-        b.move()
+        '''
+        a=random.randint(0,3)
+        if a==0:
+            b.move(gravity)
+        elif a==1:
+            b.move(gravity-0.5)
+            b.move(gravity+0.5)
+        elif a==2:
+            b.move(gravity-0.3)
+            b.move(gravity+0.3)
+            b.move(gravity+1)
+        '''
         for i in target:
             if b.hittest(i) and i.live:
                 i.live = 0
