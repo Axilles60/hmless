@@ -20,10 +20,12 @@ GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 font_name = pygame.font.match_font('arial')
 WIDTH = 800
 HEIGHT = 600
-gravity=5
+gravity=2
 score=0
 def draw_text(surf, text, size, x, y):
     '''
+    Рисует текст
+
     :param surf: поверхность, на которой будет выводиться текст
     :param text: то, что будет выводиться в виде текста
     :param size: размер шрифта
@@ -40,8 +42,9 @@ class Ball:
         """ Конструктор класса ball
 
         Args:
-        x - начальное положение мяча по горизонтали
-        y - начальное положение мяча по вертикали
+            x - начальное положение мяча по горизонтали
+            y - начальное положение мяча по вертикали
+
         """
         self.screen = screen
         self.x = x
@@ -59,9 +62,9 @@ class Ball:
         self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
         и стен по краям окна (размер окна 800х600).
         """
-        if(self.x-self.r<0 or self.x+self.r>800):
+        if(self.x-self.r<0 or self.x+self.r>WIDTH):
             self.vx=-self.vx
-        if(self.y-self.r<0 or self.y+self.r>600):
+        if(self.y-self.r<0 or self.y+self.r>HEIGHT):
             self.vy=-self.vy
         self.x += self.vx
         self.y -= self.vy
@@ -88,8 +91,8 @@ class Ball:
         if((self.x-obj.x)**2+(self.y-obj.y)**2)<=(self.r+obj.r)**2:
             score+=1
             return True
-        else:
-            return False
+
+        return False
 
 
 class Gun:
@@ -111,7 +114,7 @@ class Gun:
         Происходит при отпускании кнопки мыши.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
         """
-        global balls, bullet
+        global bullet
         bullet += 1
         new_ball = Ball(self.screen)
         new_ball.r += 5
@@ -185,17 +188,11 @@ balls = []
 clock = pygame.time.Clock()
 gun = Gun(screen)
 target = Target(screen)
+target2 =Target(screen)
+target3=Target(screen)
 finished = False
 
 while not finished:
-    screen.fill(WHITE)
-    gun.draw()
-    target.draw()
-    for b in balls:
-        b.draw()
-    draw_text(screen, str(score), 40, 20, 10)
-    pygame.display.update()
-
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -210,9 +207,27 @@ while not finished:
     for b in balls:
         b.move()
         if b.hittest(target) and target.live:
-            target.live = 0
+            target.live=0
             target.hit()
             target.new_target()
+        if b.hittest(target2) and target2.live:
+            target2.live=0
+            target2.hit()
+            target2.new_target()
+        if b.hittest(target3) and target3.live:
+            target3.live=0
+            target3.hit()
+            target3.new_target()
     gun.power_up()
+
+    screen.fill(WHITE)
+    gun.draw()
+    target.draw()
+    target2.draw()
+    target3.draw()
+    for b in balls:
+        b.draw()
+    draw_text(screen, str(score), 40, 20, 10)
+    pygame.display.update()
 
 pygame.quit()
