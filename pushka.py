@@ -98,7 +98,7 @@ class Ball:
 class Gun:
     def __init__(self, screen):
         self.screen = screen
-        self.f2_power = 10
+        self.f2_power = 2
         self.f2_on = 0
         self.an = 1
         self.color = GREY
@@ -184,12 +184,12 @@ pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 bullet = 0
 balls = []
-
+target = []
 clock = pygame.time.Clock()
 gun = Gun(screen)
-target = Target(screen)
-target2 =Target(screen)
-target3=Target(screen)
+for i in range(3):
+    new_target = Target(screen)
+    target.append(new_target)
 finished = False
 
 while not finished:
@@ -206,25 +206,17 @@ while not finished:
 
     for b in balls:
         b.move()
-        if b.hittest(target) and target.live:
-            target.live=0
-            target.hit()
-            target.new_target()
-        if b.hittest(target2) and target2.live:
-            target2.live=0
-            target2.hit()
-            target2.new_target()
-        if b.hittest(target3) and target3.live:
-            target3.live=0
-            target3.hit()
-            target3.new_target()
+        for i in target:
+            if b.hittest(i) and i.live:
+                i.live = 0
+                i.hit()
+                i.new_target()
     gun.power_up()
 
     screen.fill(WHITE)
     gun.draw()
-    target.draw()
-    target2.draw()
-    target3.draw()
+    for i in target:
+        i.draw()
     for b in balls:
         b.draw()
     draw_text(screen, str(score), 40, 20, 10)
